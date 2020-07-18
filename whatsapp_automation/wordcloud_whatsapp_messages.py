@@ -5,6 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from wordcloud import WordCloud, STOPWORDS
 from datetime import datetime
+from unidecode import unidecode
 
 class Whats():
     '''Whats App Automation'''
@@ -32,8 +33,9 @@ class Whats():
         pyautogui.click()
 
         start_time = time.time()
-        while time.time() - start_time < 60:
-            pyautogui.press("up")
+        while time.time() - start_time < 1000:
+            pyautogui.scroll(5)
+            time.sleep(0.1)
 
     def save_messages(self):
         '''Save messages in a .txt file'''
@@ -52,16 +54,26 @@ class Whats():
 
     def clean_messages(self, file_name):
         '''Read the file, remove some words and return a cleaned string'''
-        ponctuations = ['.', ',', '?', '!']
+        ponctuations = ('.', ',', '?', '!', ':', '#', '@')
+        
         with open(file_name) as file:
             text = file.read()
             file.close()
 
+        text = unidecode(text)
+        
         for ponctuation in ponctuations:            
             text = text.replace(ponctuation, "")
 
         text = text.lower()
         text = text.split()
+
+        for word in text:
+            try:
+                if word[:4] == "http":
+                    text.remove(word)
+            except:
+                pass
 
         with open("words_to_remove.txt") as file:
             for word in file:
@@ -92,7 +104,7 @@ class Whats():
 if __name__ == "__main__":
     w = Whats()
     w.login()
-    w.chat()
+    w.chat("Alao em danger BN")
     w.load_messages()
     file_name = w.save_messages()
     msgs = w.clean_messages(file_name)
